@@ -72,16 +72,16 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
     tic = time.clock()
     # for each episode
     for i_episode in range(1, n_episodes+1):
-        state = reset(env, train_mode=True)
-        # agent.reset()
+        states = reset(env, train_mode=True)
+        #agent.reset()
         score = np.zeros(agent.num_agents)
         for t in range(max_t):
-            action = agent.act(state)
-            next_state, reward, done = step(env, action)
-            #agent.step(state, action, reward, next_state, done)
-            state = next_state
-            score += reward
-            if done:
+            actions = agent.act(states)
+            next_states, rewards, dones = step(env, actions)
+            agent.step(states, actions, rewards, next_states, dones)
+            states = next_states
+            score += rewards
+            if np.any(dones):
                 break
         score = np.mean(score)
         scores_deque.append(score)
@@ -94,7 +94,7 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
         if curr_avg_score > max_score:
             max_score = curr_avg_score
         # monitor progress
-        message = "\rEpisode {}/{} || Best average reward {}"
+        message = "\rEpisode {}/{} || Best average score {}"
         if i_episode % print_every == 0:
             print(message.format(i_episode, n_episodes, max_score))
         else:
