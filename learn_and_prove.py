@@ -1,6 +1,6 @@
 # conda create --name drlcontinuous python=3.6
 # source activate drlcontinuous
-# pip install unityagents
+# pip install unityagents torch
 # --> install Reacher for single and multiagent
 from unityagents import UnityEnvironment
 import numpy as np
@@ -16,7 +16,15 @@ parser.add_argument('--multi-agent', action='store_true',
 # input argument to display learning curves
 parser.add_argument('--display', action='store_true',
                     help='Display evolution of the scores')
+parser.add_argument('--file',
+                    help='filename of the trained weights')
 args = parser.parse_args()
+
+# setting filename
+if args.file==None:
+    filename='checkpoint.pth'
+else:
+    filename=args.file
 
 # current configuration
 config = {
@@ -53,7 +61,8 @@ agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_s
 scores, scores_avg = ddpg(env, agent,
                           n_episodes=config['n_episodes'],
                           max_t=config['max_t'],
-                          print_every=config['print_every'])
+                          print_every=config['print_every'],
+                          filename=filename)
 # plot learning curves output
 # display mode
 if args.display:

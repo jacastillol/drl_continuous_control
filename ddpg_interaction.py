@@ -1,6 +1,7 @@
 import time
 import numpy as np
 from collections import deque
+import torch
 
 def info(env):
     # get the default brain
@@ -55,7 +56,7 @@ def step(env, actions):
     dones = env_info.local_done
     return next_states, rewards, dones
 
-def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10):
+def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkpoint.pth'):
     """ Deep Deterministic Policy Gradient algorithm
 
     Params:
@@ -72,11 +73,10 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10):
     # for each episode
     for i_episode in range(1, n_episodes+1):
         state = reset(env, train_mode=True)
-        action = agent.act(state)
         # agent.reset()
         score = np.zeros(agent.num_agents)
         for t in range(max_t):
-            #action = agent.act(state)
+            action = agent.act(state)
             next_state, reward, done = step(env, action)
             #agent.step(state, action, reward, next_state, done)
             state = next_state
@@ -109,5 +109,7 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10):
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}\tin {:.2f} secs'.
                   format(i_episode, np.mean(scores_deque), time.clock()-tic))
             break
+    # save final weights
+    torch.save(agent.actor_local.state_dict(), filename)
 
     return scores, scores_avg
