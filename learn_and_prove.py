@@ -5,7 +5,8 @@
 from unityagents import UnityEnvironment
 import numpy as np
 import argparse
-from ddpg_interaction import reset, step
+from ddpg_interaction import info, reset, step, ddpg
+from ddpg_agent import Agent
 
 parser = argparse.ArgumentParser()
 # input argument for single or multiple arms agents
@@ -13,29 +14,42 @@ parser.add_argument('--multi-agent', action='store_true',
                     help='To run 20 arms instead of 1')
 args = parser.parse_args()
 
+# current configuration
+config = {
+    'n_episodes':       300,   # max. number of episode to train the agent
+    'max_t':            700,   # max. number of steps per episode
+    'print_every':       10,   # save the last XXX returns of the agent
+#    'eps_start':        1.0,  # GLIE parameters
+#    'eps_end':        0.005,  #
+#    'eps_decay':      0.960,  #
+#    'BUFFER_SIZE': int(1e5),  # replay buffer size
+#    'BATCH_SIZE':        16,  # minibatch size
+#    'GAMMA':           0.99,  # discount factor
+#    'TAU':             1e-3,  # for soft update or target parameters
+#    'LR':              5e-4,  # learning rate
+#    'UPDATE_EVERY':       1,  # how often to update the network
+#    'FC1_UNITS':         16,  # number of neurons in fisrt layer
+#    'FC2_UNITS':         16,  # number of neurons in second layer
+}
+# print configuration
+print(' Config Parameters')
+for k,v in config.items():
+    print('{:<15}: {:>15}'.format(k,v))
+
 # create environment
 if args.multi_agent:
     env = UnityEnvironment(file_name='Reacher_Linux_20/Reacher.x86_64')
 else:
     env = UnityEnvironment(file_name='Reacher_Linux_1/Reacher.x86_64')
-# get the default brain
-brain_name = env.brain_names[0]
-brain = env.brains[brain_name]
-# examine
-# reset the env
-env_info = env.reset(train_mode=True)[brain_name]
-# number of agents
-num_agents =  len(env_info.agents)
-print('Number of agents:', num_agents)
-# size of each action
-action_size =  brain.vector_action_space_size
-print('Size of each action:', action_size)
-# examine the state space
-states =  env_info.vector_observations
-state_size =  states.shape[1]
-print('There are {} agents. Eachobserves a state with length: {}'.
-      format(states.shape[0], state_size))
-print('The state for the first agent looks like:', states[0])
+# get info of the environment
+num_agents, state_size, action_size = info(env)
+# create an agent
+agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size)
+#
+ddpg(env, agent,
+     n_episodes=config['n_episodes'],
+     max_t=config['max_t'],
+     print_every=config['print_every'])
 # run a random controller through arms
 reset(env, train_mode=False)
 scores = np.zeros(num_agents)
