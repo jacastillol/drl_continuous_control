@@ -5,7 +5,7 @@
 from unityagents import UnityEnvironment
 import numpy as np
 import argparse
-from ddpg_interaction import reset
+from ddpg_interaction import reset, step
 
 parser = argparse.ArgumentParser()
 # input argument for single or multiple arms agents
@@ -37,16 +37,13 @@ print('There are {} agents. Eachobserves a state with length: {}'.
       format(states.shape[0], state_size))
 print('The state for the first agent looks like:', states[0])
 # run a random controller through arms
-reset(env,train_mode=False)
+reset(env, train_mode=False)
 scores = np.zeros(num_agents)
 while True:
     actions = np.random.randn(num_agents, action_size)
     actions = np.clip(actions, -1, 1)
-    env_info = env.step(actions)[brain_name]
-    next_states = env_info.vector_observations
-    rewards = env_info.rewards
-    dones = env_info.local_done
-    scores += env_info.rewards
+    next_states, rewards, dones = step(env, actions)
+    scores += rewards
     states =  next_states
     if np.any(dones):
         break
