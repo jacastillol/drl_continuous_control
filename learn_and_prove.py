@@ -18,6 +18,8 @@ parser.add_argument('--display', action='store_true',
                     help='Display evolution of the scores')
 parser.add_argument('--file',
                     help='filename of the trained weights')
+parser.add_argument('--train', action='store_true',
+                    help='run a pre-trainded neural network agent')
 args = parser.parse_args()
 
 # setting filename
@@ -31,17 +33,20 @@ config = {
     'n_episodes':       300,   # max. number of episode to train the agent
     'max_t':            700,   # max. number of steps per episode
     'print_every':       10,   # save the last XXX returns of the agent
+    'LR_ACTOR':        1e-4,   # learning rate of the actor 
+    'LR_CRITIC':       3e-4,   # learning rate of the critic
+    'WEIGHT_DECAY':  0.0001,   # L2 weight decay
 #    'eps_start':        1.0,  # GLIE parameters
 #    'eps_end':        0.005,  #
 #    'eps_decay':      0.960,  #
-#    'BUFFER_SIZE': int(1e5),  # replay buffer size
-#    'BATCH_SIZE':        16,  # minibatch size
-#    'GAMMA':           0.99,  # discount factor
+    'BUFFER_SIZE': int(1e5),  # replay buffer size
+    'BATCH_SIZE':        16,  # minibatch size
+    'GAMMA':           0.99,   # discount factor
 #    'TAU':             1e-3,  # for soft update or target parameters
 #    'LR':              5e-4,  # learning rate
 #    'UPDATE_EVERY':       1,  # how often to update the network
-#    'FC1_UNITS':         16,  # number of neurons in fisrt layer
-#    'FC2_UNITS':         16,  # number of neurons in second layer
+    'FC_ACTOR':          32,   # number of neurons in actor layer
+    'FC_CRITIC':         32,   # number of neurons in critic layer
 }
 # print configuration
 print(' Config Parameters')
@@ -56,26 +61,35 @@ else:
 # get info of the environment
 num_agents, state_size, action_size = info(env)
 # create an agent
-agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size)
+agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size,
+              gamma=config['GAMMA'],
+              lr_actor=config['LR_ACTOR'],
+              lr_critic=config['LR_CRITIC'],
+              weight_decay=config['WEIGHT_DECAY'],
+              fc_a=config['FC_ACTOR'],
+              fc_c=config['FC_CRITIC'],
+              buffer_size=config['BUFFER_SIZE'],
+              batch_size=config['BATCH_SIZE'])
 #
-scores, scores_avg = ddpg(env, agent,
-                          n_episodes=config['n_episodes'],
-                          max_t=config['max_t'],
-                          print_every=config['print_every'],
-                          filename=filename)
-# plot learning curves output
-# display mode
-if args.display:
-    # to continue ...
-    print('Press [Q] on the plot window to continue ...')
-    # plot the scores
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.plot(np.arange(len(scores)), scores)
-    plt.plot(np.arange(len(scores_avg)), scores_avg)
-    plt.ylabel('Scores')
-    plt.xlabel('Episode #')
-    plt.show()
+if args.train:
+    scores, scores_avg = ddpg(env, agent,
+                              n_episodes=config['n_episodes'],
+                              max_t=config['max_t'],
+                              print_every=config['print_every'],
+                              filename=filename)
+    # plot learning curves output
+    # display mode
+    if args.display:
+        # to continue ...
+        print('Press [Q] on the plot window to continue ...')
+        # plot the scores
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(np.arange(len(scores)), scores)
+        plt.plot(np.arange(len(scores_avg)), scores_avg)
+        plt.ylabel('Scores')
+        plt.xlabel('Episode #')
+        plt.show()
 # run a random controller through arms
 reset(env, train_mode=False)
 scores = np.zeros(num_agents)
