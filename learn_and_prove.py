@@ -4,6 +4,7 @@
 # --> install Reacher for single and multiagent
 from unityagents import UnityEnvironment
 import numpy as np
+import matplotlib.pyplot as plt
 import argparse
 from ddpg_interaction import info, reset, step, ddpg
 from ddpg_agent import Agent
@@ -12,6 +13,9 @@ parser = argparse.ArgumentParser()
 # input argument for single or multiple arms agents
 parser.add_argument('--multi-agent', action='store_true',
                     help='To run 20 arms instead of 1')
+# input argument to display learning curves
+parser.add_argument('--display', action='store_true',
+                    help='Display evolution of the scores')
 args = parser.parse_args()
 
 # current configuration
@@ -46,10 +50,23 @@ num_agents, state_size, action_size = info(env)
 # create an agent
 agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size)
 #
-ddpg(env, agent,
-     n_episodes=config['n_episodes'],
-     max_t=config['max_t'],
-     print_every=config['print_every'])
+scores, scores_avg = ddpg(env, agent,
+                          n_episodes=config['n_episodes'],
+                          max_t=config['max_t'],
+                          print_every=config['print_every'])
+# plot learning curves output
+# display mode
+if args.display:
+    # to continue ...
+    print('Press [Q] on the plot window to continue ...')
+    # plot the scores
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.plot(np.arange(len(scores)), scores)
+    plt.plot(np.arange(len(scores_avg)), scores_avg)
+    plt.ylabel('Scores')
+    plt.xlabel('Episode #')
+    plt.show()
 # run a random controller through arms
 reset(env, train_mode=False)
 scores = np.zeros(num_agents)
