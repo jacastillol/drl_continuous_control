@@ -71,10 +71,8 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10):
     tic = time.clock()
     # for each episode
     for i_episode in range(1, n_episodes+1):
-        # action = agent.act(state)
-        action = np.random.randn(agent.num_agents, agent.action_size)
-        action = np.clip(action, -1, 1)
         state = reset(env, train_mode=True)
+        action = agent.act(state)
         # agent.reset()
         score = np.zeros(agent.num_agents)
         for t in range(max_t):
@@ -111,3 +109,5 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10):
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}\tin {:.2f} secs'.
                   format(i_episode, np.mean(scores_deque), time.clock()-tic))
             break
+
+    return scores, scores_avg
