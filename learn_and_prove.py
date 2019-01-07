@@ -1,10 +1,11 @@
 # conda create --name drlcontinuous python=3.6
 # source activate drlcontinuous
 # pip install unityagents
-# --> install Reacher
+# --> install Reacher for single and multiagent
 from unityagents import UnityEnvironment
 import numpy as np
 import argparse
+from ddpg_interaction import reset
 
 parser = argparse.ArgumentParser()
 # input argument for single or multiple arms agents
@@ -36,8 +37,7 @@ print('There are {} agents. Eachobserves a state with length: {}'.
       format(states.shape[0], state_size))
 print('The state for the first agent looks like:', states[0])
 # run a random controller through arms
-env_info = env.reset(train_mode=False)[brain_name]
-states =  env_info.vector_observations
+reset(env,train_mode=False)
 scores = np.zeros(num_agents)
 while True:
     actions = np.random.randn(num_agents, action_size)
