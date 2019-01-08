@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import argparse
 from ddpg_interaction import info, reset, step, ddpg
 from ddpg_agent import Agent
+import torch
 
 parser = argparse.ArgumentParser()
 # input argument for single or multiple arms agents
@@ -26,27 +27,28 @@ args = parser.parse_args()
 
 # setting filename
 if args.file==None:
-    filename='checkpoint.pth'
+    filename='checkpoint'
 else:
     filename=args.file
 
 # current configuration
 config = {
-    'n_episodes':      1000,   # max. number of episode to train the agent
+    'n_episodes':       200,   # max. number of episode to train the agent
     'max_t':           1000,   # max. number of steps per episode
     'print_every':       10,   # save the last XXX returns of the agent
     'SEED':               0,   # replay buffer size
-    'LR_ACTOR':        1e-4,   # learning rate of the actor 
-    'LR_CRITIC':       3e-4,   # learning rate of the critic
-    'WEIGHT_DECAY':  0.0001,   # L2 weight decay
     'BUFFER_SIZE': int(1e5),   # replay buffer size
     'BATCH_SIZE':       128,   # minibatch size
     'UPDATE_EVERY':       2,   # how often to update the network
     'GAMMA':           0.99,   # discount factor
+    'SIGMA':           0.05,   # std noise over actions for exploration
     'TAU':             1e-3,   # for soft update or target parameters
-    'FC_ACTOR':          32,   # number of neurons in actor layer
-    'FC1_CRITIC':        32,  # number of neurons in critic layer
-    'FC2_CRITIC':        16,  # number of neurons in critic layer
+    'LR_ACTOR':        1e-4,   # learning rate of the actor
+    'LR_CRITIC':       3e-4,   # learning rate of the critic
+    'WEIGHT_DECAY':  0.0001,   # L2 weight decay
+    'FC_ACTOR':          32,   # number of neurons in actor first layer
+    'FC1_CRITIC':        32,   # number of neurons in critic first layer
+    'FC2_CRITIC':        16,   # number of neurons in critic second layer
 }
 # print configuration
 print(' Config Parameters')
@@ -60,10 +62,12 @@ else:
     env = UnityEnvironment(file_name='Reacher_Linux_1/Reacher.x86_64', seed=config['SEED'])
 # get info of the environment
 num_agents, state_size, action_size = info(env)
+
 # create an agent
 agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size,
               random_seed=config['SEED'],
               gamma=config['GAMMA'],
+              sigma=config['SIGMA'],
               tau=config['TAU'],
               lr_actor=config['LR_ACTOR'],
               lr_critic=config['LR_CRITIC'],
@@ -74,13 +78,16 @@ agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_s
               buffer_size=config['BUFFER_SIZE'],
               batch_size=config['BATCH_SIZE'],
               update_every=config['UPDATE_EVERY'])
-#
+
+# learn or prove
 if args.train:
     scores, scores_avg = ddpg(env, agent,
                               n_episodes=config['n_episodes'],
                               max_t=config['max_t'],
                               print_every=config['print_every'],
                               filename=filename)
+    # save training curves
+    np.savez(filename+'.npz', scores=scores, scores_avg=scores_avg)
     # plot learning curves output
     # display mode
     if args.display:
@@ -104,6 +111,7 @@ else:
     agent.critic_local.load_state_dict(torch.load(filename+'.critic.pth'))
     agent.critic_target.load_state_dict(torch.load(filename+'.critic.pth'))
     print('Loaded {}:'.format(filename))
+
 # run a random controller through arms
 for i in range(10):
     scores = np.zeros(num_agents)
