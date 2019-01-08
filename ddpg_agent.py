@@ -15,7 +15,8 @@ class Agent:
                  gamma=0.99, tau=1e-3,
                  lr_actor=1e-4, lr_critic=3e-4, weight_decay=1e-4,
                  fc_a=32, fc1_c=32, fc2_c=32,
-                 buffer_size=int(1e5), batch_size=64, update_every=4):
+                 buffer_size=int(1e5), batch_size=64, update_every=4,
+                 sigma=0.2):
         """Initialize an Agent object.
 
         Params
@@ -47,13 +48,14 @@ class Agent:
          # Replay memory
         self.memory = ReplayBuffer(action_size, buffer_size, batch_size, random_seed)
         # Noise process
-        self.noise = OUNoise((num_agents, action_size), random_seed)
+        self.noise = OUNoise((num_agents, action_size), random_seed, sigma=sigma)
         # Initialize time step (for updating every update_every steps)
         self.t_step = 0
         # print networks info
         print(self.actor_local)
-        summary(self.actor_local, (state_size,))
+        summary(self.actor_local, input_size=(state_size,))
         print(self.critic_local)
+        # summary(self.critic_local, input_size=(state_size,action_size,))
 
     def reset(self):
         self.noise.reset()
@@ -96,6 +98,7 @@ class Agent:
         # Minimize the loss
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
+        torch.nn.utils.clip_grad_norm(self.critic_local.parameters(), 1)
         self.critic_optimizer.step()
 
         # ---------------------------- update actor ---------------------------- #
