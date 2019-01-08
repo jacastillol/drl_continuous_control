@@ -6,6 +6,7 @@ from unityagents import UnityEnvironment
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import configparser
 from ddpg_interaction import info, reset, step, ddpg
 from ddpg_agent import Agent
 import torch
@@ -21,6 +22,8 @@ parser.add_argument('--file',
                     help='filename of the trained weights')
 parser.add_argument('--train', action='store_true',
                     help='run a pre-trainded neural network agent')
+parser.add_argument('--continuing', action='store_true',
+                    help='continue training a neural network agent')
 parser.add_argument('--random', action='store_true',
                     help='run a tabula rasa agent')
 args = parser.parse_args()
@@ -32,23 +35,25 @@ else:
     filename=args.file
 
 # current configuration
+configParser = configparser.ConfigParser()
+configParser.read('params.ini')
 config = {
-    'n_episodes':       200,   # max. number of episode to train the agent
-    'max_t':           1000,   # max. number of steps per episode
-    'print_every':       10,   # save the last XXX returns of the agent
-    'SEED':               0,   # replay buffer size
-    'BUFFER_SIZE': int(1e5),   # replay buffer size
-    'BATCH_SIZE':       128,   # minibatch size
-    'UPDATE_EVERY':       2,   # how often to update the network
-    'GAMMA':           0.99,   # discount factor
-    'SIGMA':           0.05,   # std noise over actions for exploration
-    'TAU':             1e-3,   # for soft update or target parameters
-    'LR_ACTOR':        1e-4,   # learning rate of the actor
-    'LR_CRITIC':       3e-4,   # learning rate of the critic
-    'WEIGHT_DECAY':  0.0001,   # L2 weight decay
-    'FC_ACTOR':          32,   # number of neurons in actor first layer
-    'FC1_CRITIC':        32,   # number of neurons in critic first layer
-    'FC2_CRITIC':        16,   # number of neurons in critic second layer
+    'n_episodes':    int(configParser['DEFAULT']['n_episodes']),
+    'max_t':         int(configParser['DEFAULT']['max_t']),
+    'print_every':   int(configParser['DEFAULT']['print_every']),
+    'SEED':          int(configParser['DEFAULT']['SEED']),
+    'BUFFER_SIZE':   int(float(configParser['DEFAULT']['BUFFER_SIZE'])),
+    'BATCH_SIZE':    int(configParser['DEFAULT']['BATCH_SIZE']),
+    'UPDATE_EVERY':  int(configParser['DEFAULT']['UPDATE_EVERY']),
+    'GAMMA':         float(configParser['DEFAULT']['GAMMA']),
+    'SIGMA':         float(configParser['DEFAULT']['SIGMA']),
+    'TAU':           float(configParser['DEFAULT']['TAU']),
+    'LR_ACTOR':      float(configParser['DEFAULT']['LR_ACTOR']),
+    'LR_CRITIC':     float(configParser['DEFAULT']['LR_CRITIC']),
+    'WEIGHT_DECAY':  float(configParser['DEFAULT']['WEIGHT_DECAY']),
+    'FC_ACTOR':      int(configParser['DEFAULT']['FC_ACTOR']),
+    'FC1_CRITIC':    int(configParser['DEFAULT']['FC1_CRITIC']),
+    'FC2_CRITIC':    int(configParser['DEFAULT']['FC2_CRITIC']),
 }
 # print configuration
 print(' Config Parameters')
@@ -78,6 +83,14 @@ agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_s
               buffer_size=config['BUFFER_SIZE'],
               batch_size=config['BATCH_SIZE'],
               update_every=config['UPDATE_EVERY'])
+# continue training
+if args.continuing:
+    # load the weights from file
+    agent.actor_local.load_state_dict(torch.load(filename+'.actor.pth'))
+    agent.actor_target.load_state_dict(torch.load(filename+'.actor.pth'))
+    agent.critic_local.load_state_dict(torch.load(filename+'.critic.pth'))
+    agent.critic_target.load_state_dict(torch.load(filename+'.critic.pth'))
+    print('Loaded {}:'.format(filename))
 
 # learn or prove
 if args.train:
@@ -87,7 +100,7 @@ if args.train:
                               print_every=config['print_every'],
                               filename=filename)
     # save training curves
-    np.savez(filename+'.npz', scores=scores, scores_avg=scores_avg)
+    np.savez(filename+'.npz', scores=scores, scores_avg=scores_avg, config=config)
     # plot learning curves output
     # display mode
     if args.display:
