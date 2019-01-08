@@ -56,7 +56,7 @@ def step(env, actions):
     dones = env_info.local_done
     return next_states, rewards, dones
 
-def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkpoint.pth'):
+def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkpoint'):
     """ Deep Deterministic Policy Gradient algorithm
 
     Params:
@@ -94,11 +94,11 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
         if curr_avg_score > max_score:
             max_score = curr_avg_score
         # monitor progress
-        message = "\rEpisode {}/{} || Best average score {}"
+        message = "\rEpisode {}/{} || Best average score {} || Last avg. scores {}"
         if i_episode % print_every == 0:
-            print(message.format(i_episode, n_episodes, max_score))
+            print(message.format(i_episode, n_episodes, max_score, curr_avg_score))
         else:
-            print(message.format(i_episode, n_episodes, max_score),end="")
+            print(message.format(i_episode, n_episodes, max_score, curr_avg_score), end="")
         # target criteria
         if np.mean(scores_deque)>=30.0 and first_time:
             first_time=False
@@ -110,6 +110,7 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
                   format(i_episode, np.mean(scores_deque), time.clock()-tic))
             break
     # save final weights
-    torch.save(agent.actor_local.state_dict(), filename)
+    torch.save(agent.actor_local.state_dict(), filename+'.actor.pth')
+    torch.save(agent.critic_local.state_dict(), filename+'.critic.pth')
 
     return scores, scores_avg
