@@ -94,7 +94,7 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
         if curr_avg_score > max_score:
             max_score = curr_avg_score
         # monitor progress
-        message = "\rEpisode {}/{} || Best average score {} || Last avg. scores {}"
+        message = "\rEpisode {:>4}/{:>4} || Best average score {:.5f} || Last avg. scores {:.5f}"
         if i_episode % print_every == 0:
             print(message.format(i_episode, n_episodes, max_score, curr_avg_score))
         else:
