@@ -33,18 +33,18 @@ config = {
     'n_episodes':       300,   # max. number of episode to train the agent
     'max_t':            700,   # max. number of steps per episode
     'print_every':       10,   # save the last XXX returns of the agent
+    'SEED':               0,   # replay buffer size
     'LR_ACTOR':        1e-4,   # learning rate of the actor 
     'LR_CRITIC':       3e-4,   # learning rate of the critic
     'WEIGHT_DECAY':  0.0001,   # L2 weight decay
 #    'eps_start':        1.0,  # GLIE parameters
 #    'eps_end':        0.005,  #
 #    'eps_decay':      0.960,  #
-    'BUFFER_SIZE': int(1e5),  # replay buffer size
-    'BATCH_SIZE':        16,  # minibatch size
+    'BUFFER_SIZE': int(1e5),   # replay buffer size
+    'BATCH_SIZE':        16,   # minibatch size
+    'UPDATE_EVERY':       1,   # how often to update the network
     'GAMMA':           0.99,   # discount factor
-#    'TAU':             1e-3,  # for soft update or target parameters
-#    'LR':              5e-4,  # learning rate
-#    'UPDATE_EVERY':       1,  # how often to update the network
+    'TAU':             1e-3,   # for soft update or target parameters
     'FC_ACTOR':          32,   # number of neurons in actor layer
     'FC_CRITIC':         32,   # number of neurons in critic layer
 }
@@ -62,14 +62,17 @@ else:
 num_agents, state_size, action_size = info(env)
 # create an agent
 agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size,
+              random_seed=config['SEED'],
               gamma=config['GAMMA'],
+              tau=config['TAU'],
               lr_actor=config['LR_ACTOR'],
               lr_critic=config['LR_CRITIC'],
               weight_decay=config['WEIGHT_DECAY'],
               fc_a=config['FC_ACTOR'],
               fc_c=config['FC_CRITIC'],
               buffer_size=config['BUFFER_SIZE'],
-              batch_size=config['BATCH_SIZE'])
+              batch_size=config['BATCH_SIZE'],
+              update_every=config['UPDATE_EVERY'])
 #
 if args.train:
     scores, scores_avg = ddpg(env, agent,
