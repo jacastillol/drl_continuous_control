@@ -23,12 +23,12 @@ class Agent:
             action_size (int): dimension of each action
         """
         #
+        random.seed(random_seed)
         self.num_agents = num_agents
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = gamma
         self.tau = tau
-        self.seed = random.seed(random_seed)
         self.batch_size = batch_size
         self.update_every = update_every
         # Actor Network
@@ -43,6 +43,8 @@ class Agent:
                                            lr=lr_critic, weight_decay=weight_decay)
          # Replay memory
         self.memory = ReplayBuffer(action_size, buffer_size, batch_size, random_seed)
+        # Noise process
+        self.noise = OUNoise((n_agents, action_size), random_seed)
         # Initialize time step (for updating every update_every steps)
         self.t_step = 0
         # print networks info
@@ -51,15 +53,18 @@ class Agent:
         print(self.critic_local)
 
     def reset(self):
-        pass
+        self.noise.reset()
 
-    def act(self, state):
+    def act(self, state, add_noise=True):
         """Returns actions for given state as per current policy."""
         state = torch.from_numpy(state).float().to(device)
         self.actor_local.eval()
         with torch.no_grad():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
+        # add noise to actions
+        if add_noise:
+            action += self.noise.sample()
         return np.clip(action, -1, 1)
 
     def step(self, state, action, reward, next_state, done):
@@ -115,6 +120,29 @@ class Agent:
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
 
+class OUNoise:
+    """Ornstein-Uhlenbeck process."""
+
+    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+        """Initialize parameters and noise process."""
+        random.seed(seed)
+        np.random.seed(seed)
+        self.size = size
+        self.mu = mu * np.ones(size)
+        self.theta = theta
+        self.sigma = sigma
+        self.reset()
+
+    def reset(self):
+        """Reset the internal state (= noise) to mean (mu)."""
+        self.state = copy.copy(self.mu)
+
+    def sample(self):
+        """Update internal state and return it as a noise sample."""
+        x = self.state
+        dx = self.theta * (self.mu - x) + self.sigma * np.random.randn(*self.size)
+        self.state = x + dx
+        return self.state
 
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
