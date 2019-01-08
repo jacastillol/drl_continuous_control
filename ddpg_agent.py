@@ -5,6 +5,7 @@ from model import Actor, Critic
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from torchsummary import summary
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -42,6 +43,12 @@ class Agent:
                                            lr=lr_critic, weight_decay=weight_decay)
          # Replay memory
         self.memory = ReplayBuffer(action_size, buffer_size, batch_size, random_seed)
+        # Initialize time step (for updating every update_every steps)
+        self.t_step = 0
+        # print networks info
+        print(self.actor_local)
+        summary(self.actor_local, (state_size,))
+        print(self.critic_local)
 
     def reset(self):
         pass
@@ -57,7 +64,8 @@ class Agent:
 
     def step(self, state, action, reward, next_state, done):
         # Save experience / reward
-        self.memory.add(state, action, reward, next_state, done)
+        for i in range(self.num_agents):
+            self.memory.add(state[i, :], action[i, :], reward[i], next_state[i, :], done[i])
         self.t_step = (self.t_step + 1) % self.update_every
         if self.t_step == 0:
             # Learn, if enough samples are available in memory
