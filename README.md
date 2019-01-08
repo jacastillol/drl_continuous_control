@@ -81,3 +81,8 @@ FC2_CRITIC:        32
 
     ```python learn_and_prove.py [--multi-agent] [--file NAMESPACE]```
 
+1. To continue training an agent:
+
+    ```python learn_and_prove.py --continuing [--multi-agent] [--file NAMESPACE]```
+
+    This is useful to carry on with a training when de number of episodes was not enough.
