@@ -30,7 +30,7 @@ To speed up training one controller will be used to control 20 arms at the same 
 
 ## Instructions
 ### Configuration file `params.ini`
-To run the main program you have to create a configuration file called `params.ini` where you can set all important parameters from the networks architectures, learning Adam algorithms, replay memory, and others. The repository has an example file that you can copy and rename. Here is an example of a configuration file, 
+To run the main program you have to create a configuration file called `params.ini` where you can set all important parameters from the networks architectures, learning Adam algorithms, replay memory, and others. The repository has an example file `params_example.ini` that you can copy and rename. Here is an example of a configuration file, 
 
 ```
 [DEFAULT]
@@ -67,5 +67,17 @@ FC1_CRITIC:        32
 # number of neurons in critic second layer
 FC2_CRITIC:        32
 ```
-Remember to activate the environment with `source activate drlnavigation`
+### How to run the code
+1. Create a config file. One way could be `cp params_example.ini params.ini` and then modify the parameters as you want
+1. Remember to activate the environment with `source activate drlnavigation`
+1. To train one-arm new agent or twenty-arm new agent:
+  
+    ```python learn_and_prove.py --train```
+  
+    ```python learn_and_prove.py --multi-agent --train```
+  
+    This will produce three files under the namespace `checkpoint`: `checkpoint.actor.pth` and `checkpoint.critic.pth` holding the weights of the final Actor and Critic networks. The third file `checkpoint.npz` contains information about the configuration run and learning curves. To change the default namespace use the option `--file NAMESPACE`.
+1. To watch again the performance of the agent trained in the last step run again:
+
+    ```python learn_and_prove.py [--multi-agent] [--file NAMESPACE]```
 
