@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import copy
 from collections import namedtuple, deque
 from model import Actor, Critic
 import torch
@@ -13,7 +14,7 @@ class Agent:
     def __init__(self, num_agents, state_size, action_size, random_seed,
                  gamma=0.99, tau=1e-3,
                  lr_actor=1e-4, lr_critic=3e-4, weight_decay=1e-4,
-                 fc_a=32, fc_c=32,
+                 fc_a=32, fc1_c=32, fc2_c=32,
                  buffer_size=int(1e5), batch_size=64, update_every=4):
         """Initialize an Agent object.
 
@@ -37,14 +38,16 @@ class Agent:
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(),
                                           lr=lr_actor)
         # Critic Network
-        self.critic_local = Critic(state_size, action_size, random_seed, fc_units=fc_c).to(device)
-        self.critic_target = Critic(state_size, action_size, random_seed, fc_units=fc_c).to(device)
+        self.critic_local = Critic(state_size, action_size, random_seed,
+                                   fc1_units=fc1_c, fc2_units=fc2_c).to(device)
+        self.critic_target = Critic(state_size, action_size, random_seed,
+                                   fc1_units=fc1_c, fc2_units=fc2_c).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(),
                                            lr=lr_critic, weight_decay=weight_decay)
          # Replay memory
         self.memory = ReplayBuffer(action_size, buffer_size, batch_size, random_seed)
         # Noise process
-        self.noise = OUNoise((n_agents, action_size), random_seed)
+        self.noise = OUNoise((num_agents, action_size), random_seed)
         # Initialize time step (for updating every update_every steps)
         self.t_step = 0
         # print networks info

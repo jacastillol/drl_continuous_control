@@ -73,7 +73,7 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
     # for each episode
     for i_episode in range(1, n_episodes+1):
         states = reset(env, train_mode=True)
-        #agent.reset()
+        agent.reset()
         score = np.zeros(agent.num_agents)
         for t in range(max_t):
             actions = agent.act(states)
