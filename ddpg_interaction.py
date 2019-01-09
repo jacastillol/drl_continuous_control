@@ -94,20 +94,26 @@ def ddpg(env, agent, n_episodes=300, max_t=700, print_every=10, filename='checkp
         if curr_avg_score > max_score:
             max_score = curr_avg_score
         # monitor progress
-        message = "\rEpisode {:>4}/{:>4} || Best average score {:.5f} || Last avg. scores {:.5f}"
+        message = "\rEpisode {:>4}/{:>4} || Score {:.5f} || Last avg. scores {:.5f} || Best avg. score {:.5f} "
         if i_episode % print_every == 0:
-            print(message.format(i_episode, n_episodes, max_score, curr_avg_score))
+            print(message.format(i_episode, n_episodes, score, curr_avg_score, max_score))
         else:
-            print(message.format(i_episode, n_episodes, max_score, curr_avg_score), end="")
+            print(message.format(i_episode, n_episodes, score, curr_avg_score, max_score), end="")
         # target criteria
-        if np.mean(scores_deque)>=30.0 and first_time:
+        if curr_avg_score>=30.0 and first_time:
             first_time=False
+            # save solved weights for
+            torch.save(agent.actor_local.state_dict(), filename+'_solved.actor.pth')
+            torch.save(agent.critic_local.state_dict(), filename+'_solved.critic.pth')
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}\tin {:.2f} secs'.
-                  format(i_episode, np.mean(scores_deque), time.clock()-tic))
+                  format(i_episode, curr_avg_score, time.clock()-tic))
         # stopping criteria
-        if np.mean(scores_deque)>=35.0:
+        if curr_avg_score>=35.0:
+            # save solved weights for
+            torch.save(agent.actor_local.state_dict(), filename+'_over35.actor.pth')
+            torch.save(agent.critic_local.state_dict(), filename+'_over35.critic.pth')
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}\tin {:.2f} secs'.
-                  format(i_episode, np.mean(scores_deque), time.clock()-tic))
+                  format(i_episode, curr_avg_score, time.clock()-tic))
             break
     # save final weights
     torch.save(agent.actor_local.state_dict(), filename+'.actor.pth')
