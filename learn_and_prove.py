@@ -26,6 +26,8 @@ parser.add_argument('--continuing', action='store_true',
                     help='continue training a neural network agent')
 parser.add_argument('--random', action='store_true',
                     help='run a tabula rasa agent')
+parser.add_argument('--no-graph', action='store_true',
+                    help='run a tabula rasa agent')
 args = parser.parse_args()
 
 # setting filename
@@ -126,17 +128,20 @@ else:
     print('Loaded {}:'.format(filename))
 
 # run a random controller through arms
-for i in range(10):
-    scores = np.zeros(num_agents)
-    states = reset(env, train_mode=False)
-    # check performance of the agent
-    for j in range(1000):
-        actions = agent.act(states, add_noise=False)
-        next_states, rewards, dones = step(env, actions)
-        states =  next_states
-        scores += rewards
-        if np.any(dones):
-            break
-    print('Total score (averaged over agents) this episode: {}'.
-          format(np.mean(scores)))
+if args.no_graph:
+    print('no proves on controller')
+else:
+    for i in range(10):
+        scores = np.zeros(num_agents)
+        states = reset(env, train_mode=False)
+        # check performance of the agent
+        for j in range(1000):
+            actions = agent.act(states, add_noise=False)
+            next_states, rewards, dones = step(env, actions)
+            states =  next_states
+            scores += rewards
+            if np.any(dones):
+                break
+        print('Total score (averaged over agents) this episode: {}'.
+              format(np.mean(scores)))
 env.close()
