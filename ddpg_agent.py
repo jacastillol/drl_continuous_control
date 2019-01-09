@@ -40,9 +40,9 @@ class Agent:
                                           lr=lr_actor)
         # Critic Network
         self.critic_local = Critic(state_size, action_size, random_seed,
-                                   fc1_units=fc1_c, fc2_units=fc2_c).to(device)
+                                   fcs1_units=fc1_c, fc2_units=fc2_c).to(device)
         self.critic_target = Critic(state_size, action_size, random_seed,
-                                   fc1_units=fc1_c, fc2_units=fc2_c).to(device)
+                                   fcs1_units=fc1_c, fc2_units=fc2_c).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(),
                                            lr=lr_critic, weight_decay=weight_decay)
          # Replay memory
