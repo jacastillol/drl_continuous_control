@@ -55,7 +55,7 @@ class Agent:
         print(self.actor_local)
         summary(self.actor_local, input_size=(state_size,))
         print(self.critic_local)
-        # summary(self.critic_local, input_size=(state_size,action_size,))
+        summary(self.critic_local, input_size=[(state_size,), (action_size,)])
 
     def reset(self):
         self.noise.reset()
