@@ -14,7 +14,7 @@ class Agent:
     def __init__(self, num_agents, state_size, action_size, random_seed,
                  gamma=0.99, tau=1e-3,
                  lr_actor=1e-4, lr_critic=3e-4, weight_decay=1e-4,
-                 fc_a=32, fc1_c=32, fc2_c=32,
+                 fc1_a=32, fc2_a=32, fc1_c=32, fc2_c=32,
                  buffer_size=int(1e5), batch_size=64, update_every=4,
                  sigma=0.2):
         """Initialize an Agent object.
@@ -34,8 +34,10 @@ class Agent:
         self.batch_size = batch_size
         self.update_every = update_every
         # Actor Network
-        self.actor_local = Actor(state_size, action_size, random_seed, fc_units=fc_a).to(device)
-        self.actor_target = Actor(state_size, action_size, random_seed, fc_units=fc_a).to(device)
+        self.actor_local = Actor(state_size, action_size, random_seed,
+                                 fc1_units=fc1_a, fc2_units=fc2_a).to(device)
+        self.actor_target = Actor(state_size, action_size, random_seed,
+                                  fc1_units=fc1_a, fc2_units=fc2_a).to(device)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(),
                                           lr=lr_actor)
         # Critic Network
@@ -98,7 +100,7 @@ class Agent:
         # Minimize the loss
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
-        torch.nn.utils.clip_grad_norm(self.critic_local.parameters(), 1)
+        #torch.nn.utils.clip_grad_norm(self.critic_local.parameters(), 1)
         self.critic_optimizer.step()
 
         # ---------------------------- update actor ---------------------------- #
