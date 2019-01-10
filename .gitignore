@@ -1,3 +1,7 @@
+Reacher_Linux*/
+tmp/
+probes/
+params.ini
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
