@@ -1,6 +1,8 @@
 # Deep Reinforcement Learning for Continuous Control
 A robotic arm learns to reach with Deep Reinforcement Learning using __Unity ML-Agents__ plugin 
 
+![trained agent](images/trained-agent.gif)
+
 ## Project Details
 __Unity__ has an environment of a double-jointed arm with the goal of following a target, this environment is call the [__Reacher__](https://youtu.be/2N9EoF6pQyE). It's considered that the target at each time is reached if the end-effector is under a critial radio represented by a big sphere. In the animation this sphere changes its color to a light green when the center of the end effector is inside that big sphere.
 * __Reward signal__:
