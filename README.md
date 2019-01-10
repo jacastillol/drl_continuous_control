@@ -37,7 +37,7 @@ To run the main program you have to create a configuration file called `params.i
 ```
 [DEFAULT]
 # max. number of episode to train the agent
-n_episodes:       200
+n_episodes:       100
 # max. number of steps per episode
 max_t:           1000
 # save the last XXX returns of the agent
@@ -47,9 +47,9 @@ SEED:               0
 # replay buffer size
 BUFFER_SIZE:      1e5
 # minibatch size
-BATCH_SIZE:        64
+BATCH_SIZE:       256
 # how often to update the network
-UPDATE_EVERY:       4
+UPDATE_EVERY:       1
 # discount factor
 GAMMA:           0.99
 # std noise over actions for exploration
@@ -59,15 +59,17 @@ TAU:             1e-3
 # learning rate of the actor
 LR_ACTOR:        1e-4
 # learning rate of the critic
-LR_CRITIC:       3e-4
+LR_CRITIC:       1e-4
 # L2 weight decay
-WEIGHT_DECAY:  0.0001
+WEIGHT_DECAY:       0
 # number of neurons in actor first layer
-FC_ACTOR:          32
+FC1_ACTOR:        400
+# number of neurons in actor second layer
+FC2_ACTOR:        300
 # number of neurons in critic first layer
-FC1_CRITIC:        32
+FC1_CRITIC:       400
 # number of neurons in critic second layer
-FC2_CRITIC:        32
+FC2_CRITIC:       300
 ```
 ### How to run the code
 1. Create a config file. One way could be `cp params_example.ini params.ini` and then modify the parameters as you want
